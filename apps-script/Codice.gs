@@ -29,7 +29,11 @@
  *    TELEGRAM_INVITO = link del canale (https://t.me/nomecanale o link d'invito):
  *                      serve al pulsante "Ricevi le novità su Telegram" del sito.
  * 4. Esegui "attivaBot": manda un messaggio di prova nel canale e da lì
- *    controlla BuonaCaccia ogni 15 minuti. Per fermarlo esegui "disattivaBot".
+ *    controlla BuonaCaccia ogni 15 minuti e manda il riepilogo settimanale.
+ *    Per fermarlo esegui "disattivaBot".
+ *    Se il bot è già attivo e aggiorni questo file, basta salvare. Esegui "installaTrigger"
+ *    (ricrea i controlli senza scrivere nel canale) se cambi MINUTI_BOT o RIEPILOGO,
+ *    o se nella pagina Trigger manca "riepilogoSettimanale".
  */
 
 const BASE = 'https://buonacaccia.agesci.it/';
@@ -100,22 +104,37 @@ const STATI_BOT = {
   light_red: '🔴 Chiuse o non ancora aperte',
 };
 const NOMI_TIPO = { Part: 'Partenti', AltroRS: 'Altro' };
+const APERTI = ['light_green', 'light_yellow', 'light_dual'];
 
-/** Da eseguire una volta: messaggio di prova, memorizza gli eventi attuali e crea il controllo periodico. */
+const TZ = 'Europe/Rome';
+const POSTI_ULTIMI = 5;         // avviso "ultimi posti" quando ne restano così pochi (o meno)
+const GIORNI_PROMEMORIA = 7;    // promemoria quando mancano così tanti giorni all'apertura delle iscrizioni
+const FASCIA_PROMEMORIA = [8, 21]; // i promemoria partono solo tra queste ore (non di notte)
+const ORE_DETTAGLI = 6;         // ogni quanto rileggere la pagina di ogni evento (date delle iscrizioni)
+const RIEPILOGO = { giorno: 'MONDAY', ora: 8 }; // riepilogo settimanale degli eventi con iscrizioni aperte
+const GIORNI_MEMORIA = 3;       // per quanto ricordare un evento sparito dalla lista (evita falsi "nuovo evento")
+
+/** Da eseguire una volta: messaggio di prova, memorizza gli eventi attuali e crea i controlli periodici. */
 function attivaBot() {
   configTelegram(); // si ferma subito se mancano token o chat
   const ev = scaricaRS().eventi;
   if (!ev.length) throw new Error('Non trovo eventi R/S: controlla con "diagnosi" prima di attivare il bot.');
-  salvaFoto(ev);
 
-  ScriptApp.getProjectTriggers()
-    .filter(t => t.getHandlerFunction() === 'controllaNovita')
-    .forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger('controllaNovita').timeBased().everyMinutes(MINUTI_BOT).create();
+  // Si riparte da zero: gli eventi di adesso non generano avvisi
+  const adesso = new Date();
+  const dettagli = leggiDettagli(ev);
+  const archivio = {};
+  ev.forEach(e => {
+    archivio[e.id] = registro(e, null, dettagli[e.id], adesso);
+    segnaGiaNoti(e, archivio[e.id], adesso);
+  });
+  salvaArchivio(archivio);
+  installaTrigger();
 
   const app = linkApp();
   inviaTelegram(
-    `✅ <b>Bot attivo</b>\nDa adesso qui trovate i nuovi eventi R/S di BuonaCaccia e l'apertura delle iscrizioni.` +
+    `✅ <b>Bot attivo</b>\nDa adesso qui trovate i nuovi eventi R/S di BuonaCaccia, l'apertura delle iscrizioni, ` +
+    `gli ultimi posti e ogni settimana il riepilogo degli eventi aperti.` +
     `\nIn questo momento ci sono ${ev.length} eventi in programma.` +
     (app ? `\n\n<a href="${app}">Vedi tutti gli eventi</a>` : '')
   );
@@ -123,10 +142,23 @@ function attivaBot() {
 }
 
 function disattivaBot() {
-  ScriptApp.getProjectTriggers()
-    .filter(t => t.getHandlerFunction() === 'controllaNovita')
-    .forEach(t => ScriptApp.deleteTrigger(t));
+  rimuoviTrigger();
   console.log('Bot fermato: nessun controllo periodico attivo.');
+}
+
+/** Crea (o ricrea) i controlli periodici senza scrivere nel canale. */
+function installaTrigger() {
+  rimuoviTrigger();
+  ScriptApp.newTrigger('controllaNovita').timeBased().everyMinutes(MINUTI_BOT).create();
+  ScriptApp.newTrigger('riepilogoSettimanale').timeBased()
+    .onWeekDay(ScriptApp.WeekDay[RIEPILOGO.giorno]).atHour(RIEPILOGO.ora).create();
+  console.log(`Controllo ogni ${MINUTI_BOT} minuti, riepilogo ogni ${RIEPILOGO.giorno} alle ${RIEPILOGO.ora} (fuso dello script).`);
+}
+
+function rimuoviTrigger() {
+  ScriptApp.getProjectTriggers()
+    .filter(t => ['controllaNovita', 'riepilogoSettimanale'].includes(t.getHandlerFunction()))
+    .forEach(t => ScriptApp.deleteTrigger(t));
 }
 
 /** Eseguita dal trigger: confronta con l'ultima lettura e pubblica le novità. */
@@ -146,27 +178,112 @@ function controllaNovita() {
       return;
     }
 
-    const prima = leggiFoto();
+    const adesso = new Date();
+    const archivio = leggiArchivio();
+    const dettagli = leggiDettagli(daRileggere(ev, archivio, adesso));
     const messaggi = [];
     ev.forEach(e => {
-      const vecchio = prima[e.id];
-      if (vecchio === undefined) {
-        messaggi.push(`🆕 <b>Nuovo evento</b>\n${schedaEvento(e)}`);
-      } else if (vecchio !== e.stato && e.stato && !soloAffollamento(vecchio, e.stato)) {
-        const titolo = e.stato === 'light_green' ? '📣 <b>Iscrizioni aperte</b>' : '🔄 <b>Cambio di stato</b>';
-        messaggi.push(`${titolo}\n${schedaEvento(e)}\nPrima: ${STATI_BOT[vecchio] || 'non indicato'}`);
-      }
+      const vecchio = archivio[e.id];
+      const nuovo = registro(e, vecchio, dettagli[e.id], adesso);
+      const blocco = vecchio ? novita(e, vecchio, nuovo, adesso) : nuovoEvento(e, nuovo, adesso);
+      if (blocco) messaggi.push(blocco);
+      archivio[e.id] = nuovo;
     });
+    dimentica(archivio, ev, adesso);
 
-    salvaFoto(ev);
-    if (!messaggi.length) return;
-
-    const app = linkApp();
-    if (app) messaggi.push(`<a href="${app}">Vedi tutti gli eventi R/S</a>`);
-    dividi(messaggi).forEach(testo => inviaTelegram(testo));
+    if (messaggi.length) {
+      const app = linkApp();
+      if (app) messaggi.push(`<a href="${app}">Vedi tutti gli eventi R/S</a>`);
+      // Prima si invia, poi si salva: se Telegram rifiuta, al prossimo giro gli avvisi si ripetono invece di perdersi
+      dividi(messaggi).forEach(testo => inviaTelegram(testo));
+    }
+    salvaArchivio(archivio);
   } finally {
     lock.releaseLock();
   }
+}
+
+/** Eseguita dal trigger settimanale: elenca gli eventi con le iscrizioni aperte. */
+function riepilogoSettimanale() {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(60000)) throw new Error('Un altro controllo è in corso: riepilogo saltato.');
+  try {
+    const archivio = leggiArchivio();
+    const adesso = new Date();
+    // Il semaforo a volte resta acceso anche dopo la chiusura: si scartano gli eventi già chiusi
+    const ev = scaricaRS().eventi.filter(e => APERTI.includes(e.stato) &&
+      !(giorniA((archivio[e.id] || {}).chiude, adesso) < 0));
+    if (!ev.length) {
+      console.log('Nessun evento con iscrizioni aperte: niente riepilogo questa settimana.');
+      return;
+    }
+    const blocchi = [
+      `📋 <b>Iscrizioni aperte</b>\n` +
+      (ev.length === 1 ? `Questa settimana c'è 1 evento` : `Questa settimana ci sono ${ev.length} eventi`) +
+      ` con le iscrizioni aperte.`,
+    ];
+    ev.forEach(e => blocchi.push(schedaEvento(e, archivio[e.id])));
+    const app = linkApp();
+    if (app) blocchi.push(`<a href="${app}">Vedi tutti gli eventi R/S</a>`);
+    dividi(blocchi).forEach(testo => inviaTelegram(testo));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** Il blocco per un evento appena comparso nella lista. */
+function nuovoEvento(e, n, adesso) {
+  segnaGiaNoti(e, n, adesso); // ultimi posti e data di apertura sono già nella scheda
+  return `🆕 <b>Nuovo evento</b>\n${schedaEvento(e, n)}`;
+}
+
+/** Il blocco con le novità di un evento già noto (null se non c'è niente da dire). */
+function novita(e, v, n, adesso) {
+  const titoli = [];
+  const note = [];
+
+  if (n.s !== v.s && e.stato && !soloAffollamento(v.s, n.s)) {
+    titoli.push(n.s === 'light_green' ? '📣 <b>Iscrizioni aperte</b>' : '🔄 <b>Cambio di stato</b>');
+    note.push(`Prima: ${STATI_BOT[v.s] || 'non indicato'}`);
+  }
+
+  // Si confronta solo se c'erano già entrambi i valori (gli eventi memorizzati prima di questa versione non li hanno)
+  const cambi = [
+    ['📅 Date', periodo(v), periodo(n)],
+    ['📍 Luogo', luogoCompleto(v), luogoCompleto(n)],
+    ['📝 Apertura iscrizioni', v.apre, n.apre],
+    ['📝 Chiusura iscrizioni', v.chiude, n.chiude],
+  ].filter(c => c[1] && c[2] && c[1] !== c[2]);
+  if (cambi.length) {
+    titoli.push('✏️ <b>Evento modificato</b>');
+    cambi.forEach(c => note.push(`${c[0]}: ${escT(c[1])} → ${escT(c[2])}`));
+  }
+
+  const liberi = postiLiberi(e);
+  if (liberi != null && liberi > POSTI_ULTIMI + 2) delete n.u; // posti tornati: il prossimo calo si riavvisa
+  if (APERTI.includes(e.stato) && liberi != null && liberi > 0 && liberi <= POSTI_ULTIMI && !n.u) {
+    titoli.push('⏳ <b>Ultimi posti</b>');
+    note.push(liberi === 1 ? 'Resta 1 posto' : `Restano ${liberi} posti`);
+    n.u = 1;
+  }
+
+  const giorni = giorniA(n.apre, adesso);
+  if (giorni != null && giorni >= 1 && giorni <= GIORNI_PROMEMORIA && n.p !== n.apre &&
+      !APERTI.includes(e.stato) && inFascia(adesso)) {
+    titoli.push(giorni === 1 ? '⏰ <b>Domani aprono le iscrizioni</b>' : `⏰ <b>Tra ${giorni} giorni aprono le iscrizioni</b>`);
+    n.p = n.apre;
+  }
+
+  if (!titoli.length) return null;
+  return [titoli.join('\n'), schedaEvento(e, n)].concat(note).join('\n');
+}
+
+/** Per un evento appena visto: "ultimi posti" e promemoria valgono come già dati. */
+function segnaGiaNoti(e, n, adesso) {
+  const liberi = postiLiberi(e);
+  if (liberi != null && liberi <= POSTI_ULTIMI) n.u = 1;
+  const giorni = giorniA(n.apre, adesso);
+  if (giorni != null && giorni <= GIORNI_PROMEMORIA) n.p = n.apre;
 }
 
 /** Tra "pochi posti" e "forte sovrannumero" lo stato oscilla spesso: non vale un avviso. */
@@ -175,15 +292,44 @@ function soloAffollamento(a, b) {
   return s.includes(a) && s.includes(b);
 }
 
-function schedaEvento(e) {
+function postiLiberi(e) {
+  return e.iscritti == null || e.posti == null ? null : e.posti - e.iscritti;
+}
+
+function periodo(r) {
+  return r.dal ? (r.al && r.al !== r.dal ? `${r.dal} – ${r.al}` : r.dal) : '';
+}
+
+function luogoCompleto(r) {
+  return [r.luogo, r.regione].filter(Boolean).join(', ');
+}
+
+/** Giorni da oggi (ora italiana) alla data gg/mm/aaaa; null se la data non c'è. */
+function giorniA(data, adesso) {
+  if (!RE_DATA.test(data || '')) return null;
+  const [g, m, a] = data.split('/').map(Number);
+  const [ao, mo, go] = Utilities.formatDate(adesso, TZ, 'yyyy-M-d').split('-').map(Number);
+  return Math.round((Date.UTC(a, m - 1, g) - Date.UTC(ao, mo - 1, go)) / 86400000);
+}
+
+function inFascia(adesso) {
+  const ora = Number(Utilities.formatDate(adesso, TZ, 'H'));
+  return ora >= FASCIA_PROMEMORIA[0] && ora < FASCIA_PROMEMORIA[1];
+}
+
+function schedaEvento(e, r) {
+  r = r || {};
   const tipo = NOMI_TIPO[e.tipo] || e.tipo;
   const date = e.al && e.al !== e.dal ? `${e.dal.slice(0, 5)} – ${e.al}` : e.dal;
   const luogo = [e.luogo, e.regione].filter(Boolean).join(', ');
   const posti = e.iscritti == null ? '' : e.posti == null ? `${e.iscritti} iscritti` : `${e.iscritti}/${e.posti} iscritti`;
+  const iscrizioni = r.apre && r.chiude ? `Iscrizioni dal ${r.apre} al ${r.chiude}`
+    : r.apre ? `Iscrizioni dal ${r.apre}` : r.chiude ? `Iscrizioni fino al ${r.chiude}` : '';
   return [
     `<b>${escT(tipo)}</b> · <a href="${BASE}Event.aspx?e=${encodeURIComponent(e.id)}">${escT(e.titolo)}</a>`,
     [date && `📅 ${date}`, luogo && `📍 ${escT(luogo)}`].filter(Boolean).join('  '),
     [e.quota && `💶 ${escT(e.quota)}`, posti && `👥 ${posti}`].filter(Boolean).join('  '),
+    iscrizioni && `📝 ${iscrizioni}`,
     STATI_BOT[e.stato] || '',
   ].filter(Boolean).join('\n');
 }
@@ -245,14 +391,102 @@ function configTelegram() {
   return { token, chat };
 }
 
-function leggiFoto() {
-  return JSON.parse(PropertiesService.getScriptProperties().getProperty('foto_rs') || '{}');
+// ==================== Memoria del bot ====================
+// Una proprietà script per evento ("ev_ID"), così non si supera il limite di 9 KB per proprietà.
+// s stato · dal, al, luogo, regione · apre, chiude (iscrizioni) · letto (ms, ultima lettura della pagina evento)
+// visto (giorno dell'ultima volta in lista) · u ("ultimi posti" già avvisato) · p (data di apertura già ricordata)
+
+const PREFISSO = 'ev_';
+
+function leggiArchivio() {
+  const props = PropertiesService.getScriptProperties().getProperties();
+  const archivio = {};
+  Object.keys(props).forEach(k => {
+    if (k.indexOf(PREFISSO) !== 0) return;
+    try { archivio[k.slice(PREFISSO.length)] = JSON.parse(props[k]); } catch (err) {}
+  });
+  // Formato delle versioni precedenti (foto_rs, solo lo stato di ogni evento): si riparte da lì
+  if (!Object.keys(archivio).length && props.foto_rs) {
+    const foto = JSON.parse(props.foto_rs);
+    Object.keys(foto).forEach(id => { archivio[id] = { s: foto[id] }; });
+  }
+  return archivio;
 }
 
-function salvaFoto(ev) {
-  const foto = {};
-  ev.forEach(e => { foto[e.id] = e.stato; });
-  PropertiesService.getScriptProperties().setProperty('foto_rs', JSON.stringify(foto));
+/** Scrive solo gli eventi cambiati e toglie quelli dimenticati. */
+function salvaArchivio(archivio) {
+  const p = PropertiesService.getScriptProperties();
+  const salvate = p.getProperties();
+  const nuove = {};
+  Object.keys(archivio).forEach(id => {
+    const v = JSON.stringify(archivio[id]);
+    if (salvate[PREFISSO + id] !== v) nuove[PREFISSO + id] = v;
+  });
+  if (Object.keys(nuove).length) p.setProperties(nuove);
+  Object.keys(salvate).forEach(k => {
+    if (k.indexOf(PREFISSO) === 0 && !archivio[k.slice(PREFISSO.length)]) p.deleteProperty(k);
+  });
+  if (salvate.foto_rs !== undefined) p.deleteProperty('foto_rs');
+}
+
+/** Il record aggiornato di un evento: dati della lista, date delle iscrizioni, avvisi già dati. */
+function registro(e, v, det, adesso) {
+  v = v || {};
+  return {
+    s: e.stato || v.s || '',
+    dal: e.dal, al: e.al, luogo: e.luogo, regione: e.regione,
+    apre: (det && det.apre) || v.apre || '',
+    chiude: (det && det.chiude) || v.chiude || '',
+    letto: det ? adesso.getTime() : v.letto || 0,
+    visto: Math.floor(adesso.getTime() / 86400000),
+    u: v.u, p: v.p,
+  };
+}
+
+/** Toglie gli eventi spariti dalla lista da più di GIORNI_MEMORIA giorni. */
+function dimentica(archivio, ev, adesso) {
+  const presenti = {};
+  ev.forEach(e => { presenti[e.id] = true; });
+  const oggi = Math.floor(adesso.getTime() / 86400000);
+  Object.keys(archivio).forEach(id => {
+    if (!presenti[id] && oggi - (archivio[id].visto || 0) > GIORNI_MEMORIA) delete archivio[id];
+  });
+}
+
+/** Gli eventi la cui pagina va riletta (mai letta o letta da più di ORE_DETTAGLI ore), al massimo 30 per giro. */
+function daRileggere(ev, archivio, adesso) {
+  const letto = e => (archivio[e.id] && archivio[e.id].letto) || 0;
+  return ev
+    .filter(e => adesso.getTime() - letto(e) > ORE_DETTAGLI * 3600000)
+    .sort((a, b) => letto(a) - letto(b))
+    .slice(0, 30);
+}
+
+/** Legge dalla pagina di ogni evento le date di apertura e chiusura delle iscrizioni. */
+function leggiDettagli(ev) {
+  const out = {};
+  if (!ev.length) return out;
+  let risposte;
+  try {
+    risposte = UrlFetchApp.fetchAll(ev.map(e => ({
+      url: `${BASE}Event.aspx?e=${encodeURIComponent(e.id)}`, muteHttpExceptions: true, followRedirects: true,
+    })));
+  } catch (err) {
+    console.warn('Pagine degli eventi non raggiungibili: ' + err.message);
+    return out;
+  }
+  risposte.forEach((res, i) => {
+    if (res.getResponseCode() !== 200) return;
+    const html = res.getContentText('UTF-8');
+    out[ev[i].id] = { apre: campoData(html, 'lbSubsFrom'), chiude: campoData(html, 'lbSubsTo') };
+  });
+  return out;
+}
+
+/** La data nello <span id="..._lbSubsFrom"> (o lbSubsTo) della pagina evento. */
+function campoData(html, id) {
+  const m = html.match(new RegExp(`id="[^"]*_${id}"[^>]*>\\s*(\\d{2}/\\d{2}/\\d{4})`));
+  return m ? m[1] : '';
 }
 
 function linkApp() {
@@ -414,4 +648,12 @@ function diagnosi() {
     delete copia.tipoHtml;
     console.log(JSON.stringify(copia));
   });
+
+  // Le date delle iscrizioni arrivano dalla pagina del singolo evento
+  const primo = soloRS(righe)[0];
+  if (primo) {
+    const d = leggiDettagli([primo])[primo.id] || {};
+    console.log(`Pagina evento ${primo.id}: iscrizioni dal ${d.apre || '?'} al ${d.chiude || '?'}` +
+      (d.apre ? '' : ' (date non trovate: controlla gli span lbSubsFrom e lbSubsTo)'));
+  }
 }
