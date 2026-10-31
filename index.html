@@ -283,6 +283,15 @@ function posti(e) {
   return `${e.iscritti} iscritti su ${e.posti} posti`;
 }
 
+// Date delle iscrizioni: arrivano solo se il bot le ha già lette dalla pagina dell'evento
+function iscrizioni(e) {
+  const breve = d => d.slice(0, 5);
+  if (e.apre && e.chiude) return `Iscrizioni dal ${breve(e.apre)} al ${breve(e.chiude)}`;
+  if (e.apre) return `Iscrizioni dal ${breve(e.apre)}`;
+  if (e.chiude) return `Iscrizioni fino al ${breve(e.chiude)}`;
+  return '';
+}
+
 function render(primaVolta) {
   const q = $('cerca').value.trim().toLowerCase();
   const reg = $('regione').value;
@@ -319,7 +328,7 @@ function render(primaVolta) {
     <ul class="lista${primaVolta ? ' appena' : ''}">${g.eventi.map(e => {
       const p = periodo(e);
       const luogo = [e.luogo, e.regione].filter(Boolean).join(', ');
-      const meta = [luogo, e.quota, posti(e)].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('');
+      const meta = [luogo, e.quota, posti(e), iscrizioni(e)].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('');
       return `<li class="ev" data-s="${esc(e.stato)}">
         <a href="${LINK}${encodeURIComponent(e.id)}" target="_blank" rel="noopener">
           <div class="quando"><span class="giorni">${esc(p.giorni)}</span><span class="mesi">${esc(p.mesi)}</span></div>

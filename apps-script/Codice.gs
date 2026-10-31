@@ -54,7 +54,7 @@ const TIPI_RS_RISERVA = ['ROSS', 'Part', 'EPPPI', 'WS', 'Workshop', 'Cantiere'];
 function doGet() {
   let dati;
   try {
-    dati = getEventi();
+    dati = conDateIscrizioni(getEventi());
   } catch (err) {
     dati = { errore: err.message };
   }
@@ -73,6 +73,20 @@ function getEventi() {
     throw new Error('Non trovo eventi R/S nella lista di BuonaCaccia. Avvisa chi gestisce questa pagina.');
   }
   return out;
+}
+
+/**
+ * Aggiunge a ogni evento le date delle iscrizioni (apre, chiude).
+ * Non sono nella lista: le legge il bot dalle pagine dei singoli eventi e le tiene nella sua memoria.
+ */
+function conDateIscrizioni(dati) {
+  const archivio = leggiArchivio();
+  dati.eventi.forEach(e => {
+    const r = archivio[e.id] || {};
+    if (r.apre) e.apre = r.apre;
+    if (r.chiude) e.chiude = r.chiude;
+  });
+  return dati;
 }
 
 /** Scarica la lista, tiene gli eventi R/S e aggiorna la cache della web app. */
