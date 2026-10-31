@@ -25,6 +25,7 @@
   --linea: #CFD8CF;
   --rosso: #C4122F;
   --rosso-chiaro: #F6DDE1;
+  --su-rosso: #fff;
   --verde: #1F7A4A;
   --giallo: #A86A0B;
   --arancio: #B9470F;
@@ -40,6 +41,7 @@
     --linea: #2A384A;
     --rosso: #FF5C70;
     --rosso-chiaro: #3B1A21;
+    --su-rosso: #22090E;
     --verde: #52C48A;
     --giallo: #E4AE48;
     --arancio: #F2884A;
@@ -71,7 +73,7 @@ h1 {
   background: var(--inchiostro); color: var(--sfondo); text-decoration: none;
   font-weight: 700; font-size: 15px; border-radius: 999px; padding: 9px 16px 9px 13px;
 }
-.canale:hover { background: var(--rosso); color: #fff; }
+.canale:hover { background: var(--rosso); color: var(--su-rosso); }
 
 /* Filtri */
 .filtri {
@@ -92,7 +94,7 @@ input[type=search]:focus-visible, select:focus-visible, button:focus-visible, a:
   border: 1px solid var(--linea); background: transparent; color: var(--inchiostro);
   border-radius: 999px; padding: 5px 12px;
 }
-.tipi button[aria-pressed=true] { background: var(--rosso); border-color: var(--rosso); color: #fff; }
+.tipi button[aria-pressed=true] { background: var(--rosso); border-color: var(--rosso); color: var(--su-rosso); }
 .spunte { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 15px; color: var(--tenue); }
 .spunte label { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; }
 .spunte input { accent-color: var(--rosso); width: 17px; height: 17px; margin: 0; }
