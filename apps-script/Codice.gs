@@ -39,7 +39,7 @@ const MINUTI_BOT = 15;       // ogni quanto il bot controlla le novità (1, 5, 1
 const RE_DATA = /^\d{2}\/\d{2}\/\d{4}$/;
 
 // Indirizzo del sito su GitHub Pages, usato nei messaggi del bot ("Vedi tutti gli eventi").
-const URL_SITO = 'https://mattia-lrs.github.io/eventi-rs/';
+const URL_SITO = 'https://eventi-rs.mattialarosa.com/';
 
 // Usati solo se nella pagina non si riesce a riconoscere l'icona R/S.
 const TIPI_RS_RISERVA = ['ROSS', 'Part', 'EPPPI', 'WS', 'Workshop', 'Cantiere'];
