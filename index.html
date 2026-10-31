@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eventi R/S</title>
+<meta name="description" content="Gli eventi di BuonaCaccia per rover e scolte: ROSS, EPPPI, eventi partenti e altro.">
+<meta property="og:title" content="Eventi R/S">
+<meta property="og:description" content="ROSS, EPPPI, eventi partenti e gli altri eventi per rover e scolte, presi da BuonaCaccia.">
+<meta property="og:image" content="https://mattia-lrs.github.io/eventi-rs/icona/icona-512.png">
+<meta name="theme-color" content="#C4122F">
+<link rel="icon" type="image/svg+xml" href="icona/icona.svg">
+<link rel="icon" type="image/png" href="icona/icona-512.png">
+<link rel="apple-touch-icon" href="icona/icona-512.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sfondo: #E9EEE8;
+  --carta: #FBFCFA;
+  --inchiostro: #17251D;
+  --tenue: #56665C;
+  --linea: #CFD8CF;
+  --rosso: #C4122F;
+  --rosso-chiaro: #F6DDE1;
+  --verde: #1F7A4A;
+  --giallo: #A86A0B;
+  --arancio: #B9470F;
+  --spento: #7A867E;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sfondo: #111814;
+    --carta: #19221C;
+    --inchiostro: #E5ECE6;
+    --tenue: #98A79D;
+    --linea: #2B372F;
+    --rosso: #FF5C70;
+    --rosso-chiaro: #3B1A21;
+    --verde: #52C48A;
+    --giallo: #E4AE48;
+    --arancio: #F2884A;
+    --spento: #879389;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--sfondo);
+  color: var(--inchiostro);
+  font-family: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+}
+main { max-width: 760px; margin: 0 auto; padding: 28px 18px 64px; }
+
+/* Testata */
+.testata { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 22px; }
+.icona { flex: none; width: 54px; height: 54px; border-radius: 12px; }
+h1 {
+  margin: 0; font-size: clamp(34px, 8vw, 52px); line-height: 0.95;
+  font-weight: 800; letter-spacing: -0.035em; font-variation-settings: 'opsz' 96;
+}
+.intro { margin: 8px 0 0; color: var(--tenue); max-width: 54ch; }
+.canale {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 14px;
+  background: var(--inchiostro); color: var(--sfondo); text-decoration: none;
+  font-weight: 700; font-size: 15px; border-radius: 999px; padding: 9px 16px 9px 13px;
+}
+.canale:hover { background: var(--rosso); color: #fff; }
+
+/* Filtri */
+.filtri {
+  background: var(--carta); border: 1px solid var(--linea); border-radius: 14px;
+  padding: 14px; display: grid; gap: 12px; margin-bottom: 8px;
+}
+.campi { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+input[type=search], select {
+  width: 100%; font: inherit; color: inherit; background: var(--sfondo);
+  border: 1px solid var(--linea); border-radius: 9px; padding: 10px 12px;
+}
+input[type=search]:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible, input[type=checkbox]:focus-visible {
+  outline: 2px solid var(--rosso); outline-offset: 2px;
+}
+.tipi { display: flex; flex-wrap: wrap; gap: 6px; }
+.tipi button {
+  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--linea); background: transparent; color: var(--inchiostro);
+  border-radius: 999px; padding: 5px 12px;
+}
+.tipi button[aria-pressed=true] { background: var(--rosso); border-color: var(--rosso); color: #fff; }
+.spunte { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 15px; color: var(--tenue); }
+.spunte label { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; }
+.spunte input { accent-color: var(--rosso); width: 17px; height: 17px; margin: 0; }
+.nascosto { display: none !important; }
+.conta { font-size: 14px; color: var(--tenue); margin: 12px 2px 0; }
+
+/* Elenco */
+.mese {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin: 30px 2px 10px; padding-bottom: 6px; border-bottom: 2px solid var(--inchiostro);
+}
+.mese h2 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; text-transform: capitalize; }
+.mese span { font-size: 14px; color: var(--tenue); }
+ul.lista { list-style: none; margin: 0; padding: 0; }
+.ev + .ev { border-top: 1px solid var(--linea); }
+.ev a {
+  display: grid; grid-template-columns: 92px 1fr; gap: 14px;
+  padding: 14px 4px; color: inherit; text-decoration: none; border-radius: 10px;
+}
+.ev a:hover .titolo { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.quando { border-left: 4px solid var(--rosso); padding-left: 10px; }
+.ev[data-s=light_red] .quando { border-color: var(--spento); }
+.giorni { display: block; font-size: 25px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mesi { display: block; font-size: 14px; color: var(--tenue); margin-top: 4px; }
+.riga1 { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.tipo {
+  font-size: 13px; font-weight: 700; color: var(--rosso);
+  background: var(--rosso-chiaro); border-radius: 5px; padding: 1px 7px;
+}
+.stato { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; }
+.stato::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+.ev[data-s=light_green] .stato { color: var(--verde); }
+.ev[data-s=light_yellow] .stato { color: var(--giallo); }
+.ev[data-s=light_dual] .stato { color: var(--arancio); }
+.ev[data-s=light_red] .stato, .ev[data-s=''] .stato { color: var(--spento); }
+.titolo { margin: 5px 0 4px; font-size: 19px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
+.meta { margin: 0; font-size: 15px; color: var(--tenue); display: flex; flex-wrap: wrap; gap: 2px 14px; }
+
+.messaggio {
+  background: var(--carta); border: 1px solid var(--linea); border-radius: 14px;
+  padding: 22px; margin-top: 24px; color: var(--tenue);
+}
+.messaggio.errore { border-color: var(--rosso); color: var(--inchiostro); }
+footer { margin-top: 36px; font-size: 13px; color: var(--tenue); }
+footer a { color: inherit; }
+
+@media (max-width: 520px) {
+  main { padding-top: 20px; }
+  .campi { grid-template-columns: 1fr; }
+  .ev a { grid-template-columns: 74px 1fr; gap: 12px; }
+  .giorni { font-size: 21px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lista.appena { animation: entra .35s ease-out; }
+  @keyframes entra { from { opacity: 0; transform: translateY(6px); } }
+}
+</style>
+</head>
+<body>
+<main>
+  <header class="testata">
+    <img class="icona" src="icona/icona.svg" alt="" width="54" height="54">
+    <div>
+      <h1>Eventi R/S</h1>
+      <p class="intro">ROSS, EPPPI, eventi partenti e gli altri eventi per rover e scolte presi da BuonaCaccia. Prima di iscriverti parlane con i tuoi capi.</p>
+      <a id="canale" class="canale nascosto" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6v3.6L4.3 15.4A1 1 0 0 0 5.2 17h13.6a1 1 0 0 0 .9-1.6L18 12.6V9a6 6 0 0 0-6-6Zm-2.4 15.5a2.5 2.5 0 0 0 4.8 0Z" fill="currentColor"/></svg>
+        Ricevi le novità su Telegram
+      </a>
+    </div>
+  </header>
+
+  <section class="filtri" aria-label="Filtri">
+    <div class="campi">
+      <input type="search" id="cerca" placeholder="Cerca per titolo o località" aria-label="Cerca">
+      <select id="regione" aria-label="Regione"><option value="">Tutte le regioni</option></select>
+    </div>
+    <div class="tipi" id="tipi" role="group" aria-label="Tipo di evento"></div>
+    <div class="spunte">
+      <label><input type="checkbox" id="aperti"> Solo con iscrizioni aperte</label>
+      <label id="rigaNaz" class="nascosto"><input type="checkbox" id="nazionali" checked> Includi gli eventi nazionali</label>
+    </div>
+  </section>
+
+  <p class="conta" id="conta" aria-live="polite"></p>
+  <div id="elenco"><div class="messaggio">Carico gli eventi da BuonaCaccia…</div></div>
+
+  <footer id="piede"></footer>
+</main>
+
+<script>
+// Link /exec del deployment Apps Script (Codice.gs)
+const API = 'https://script.google.com/macros/s/AKfycbw0v94DTvL7-HQRP-IWfaMVDOKEiBb0giXtCRo_N-qj3ucjc_N4kfpRPGrE998WggMs/exec';
+
+const DATI = { regione: new URLSearchParams(location.search).get('regione') || '' };
+const LINK = 'https://buonacaccia.agesci.it/Event.aspx?e=';
+const STATI = {
+  light_green: 'Iscrizioni aperte',
+  light_yellow: 'Pochi posti',
+  light_dual: 'Forte sovrannumero',
+  light_red: 'Chiuse o non ancora aperte',
+};
+const NOMI_TIPO = { Part: 'Partenti', AltroRS: 'Altro' };
+const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+const MESI_BREVI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nomeTipo = t => NOMI_TIPO[t] || t;
+
+let eventi = [];
+const tipiScelti = new Set();
+
+
+// Preferenze ricordate sul dispositivo; il link con ?regione=... ha la precedenza
+let pref = {};
+try { pref = JSON.parse(localStorage.getItem('eventiRS') || '{}'); } catch (e) {}
+function salvaPref() {
+  try {
+    localStorage.setItem('eventiRS', JSON.stringify({
+      regione: $('regione').value, aperti: $('aperti').checked, nazionali: $('nazionali').checked,
+    }));
+  } catch (e) {}
+}
+
+function mostraErrore(testo) {
+  $('elenco').innerHTML = `<div class="messaggio errore">${esc(testo)}</div>`;
+}
+
+fetch(API)
+  .then(r => {
+    if (!r.ok) throw new Error();
+    return r.json();
+  })
+  .then(r => {
+    if (r.canale) {
+      $('canale').href = r.canale;
+      $('canale').classList.remove('nascosto');
+    }
+    if (r.errore) return mostraErrore(r.errore);
+    avvia(r);
+  })
+  .catch(() => mostraErrore('Non riesco a caricare gli eventi. Controlla la connessione e ricarica la pagina.'));
+
+function avvia(r) {
+  eventi = r.eventi;
+
+  const regioni = [...new Set(eventi.map(e => e.regione).filter(Boolean))]
+    .sort((a, b) => (a === 'Nazionale') - (b === 'Nazionale') || a.localeCompare(b, 'it'));
+  $('regione').insertAdjacentHTML('beforeend', regioni.map(x => `<option>${esc(x)}</option>`).join(''));
+
+  const voluta = (DATI.regione || pref.regione || '').toLowerCase();
+  const trovata = regioni.find(x => x.toLowerCase() === voluta);
+  if (trovata) $('regione').value = trovata;
+  if (typeof pref.aperti === 'boolean') $('aperti').checked = pref.aperti;
+  if (typeof pref.nazionali === 'boolean') $('nazionali').checked = pref.nazionali;
+
+  const tipi = [...new Set(eventi.map(e => e.tipo).filter(Boolean))];
+  $('tipi').innerHTML = tipi.map(t => `<button type="button" aria-pressed="false" data-t="${esc(t)}">${esc(nomeTipo(t))}</button>`).join('');
+
+  const ora = new Date(r.aggiornato);
+  $('piede').innerHTML = `Dati da <a href="https://buonacaccia.agesci.it/Events.aspx" target="_blank" rel="noopener">BuonaCaccia</a>, letti alle ${ora.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}. Per i dettagli e l'iscrizione fa fede la pagina dell'evento.`;
+
+  render(true);
+}
+
+function data(s) {
+  const [g, m, a] = s.split('/').map(Number);
+  return new Date(a, m - 1, g);
+}
+const due = n => String(n).padStart(2, '0');
+
+function periodo(e) {
+  if (!e.dal) return { giorni: '?', mesi: '' };
+  const a = data(e.dal);
+  const b = e.al ? data(e.al) : a;
+  if (+a === +b) return { giorni: due(a.getDate()), mesi: MESI_BREVI[a.getMonth()] };
+  const mesi = a.getMonth() === b.getMonth()
+    ? MESI_BREVI[a.getMonth()]
+    : `${MESI_BREVI[a.getMonth()]}–${MESI_BREVI[b.getMonth()]}`;
+  return { giorni: `${due(a.getDate())}–${due(b.getDate())}`, mesi };
+}
+
+function posti(e) {
+  if (e.iscritti == null) return '';
+  if (e.posti == null) return `${e.iscritti} iscritti`;
+  return `${e.iscritti} iscritti su ${e.posti} posti`;
+}
+
+function render(primaVolta) {
+  const q = $('cerca').value.trim().toLowerCase();
+  const reg = $('regione').value;
+  const naz = $('nazionali').checked;
+  const soloAperti = $('aperti').checked;
+  $('rigaNaz').classList.toggle('nascosto', !reg || reg === 'Nazionale');
+
+  const visibili = eventi.filter(e => {
+    if (tipiScelti.size && !tipiScelti.has(e.tipo)) return false;
+    if (soloAperti && !['light_green', 'light_yellow', 'light_dual'].includes(e.stato)) return false;
+    if (reg && e.regione !== reg && !(naz && e.regione === 'Nazionale')) return false;
+    if (q && !`${e.titolo} ${e.luogo} ${e.regione} ${e.tipo}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  $('conta').textContent = `${visibili.length} ${visibili.length === 1 ? 'evento' : 'eventi'}`;
+
+  if (!visibili.length) {
+    $('elenco').innerHTML = '<div class="messaggio">Nessun evento con questi filtri. Prova a togliere qualche tipo o a scegliere tutte le regioni.</div>';
+    return;
+  }
+
+  const gruppi = [];
+  visibili.forEach(e => {
+    const d = e.dal ? data(e.dal) : null;
+    const chiave = d ? `${MESI[d.getMonth()]} ${d.getFullYear()}` : 'Senza data';
+    let g = gruppi[gruppi.length - 1];
+    if (!g || g.chiave !== chiave) gruppi.push(g = { chiave, eventi: [] });
+    g.eventi.push(e);
+  });
+
+  $('elenco').innerHTML = gruppi.map(g => `
+    <div class="mese"><h2>${esc(g.chiave)}</h2><span>${g.eventi.length} ${g.eventi.length === 1 ? 'evento' : 'eventi'}</span></div>
+    <ul class="lista${primaVolta ? ' appena' : ''}">${g.eventi.map(e => {
+      const p = periodo(e);
+      const luogo = [e.luogo, e.regione].filter(Boolean).join(', ');
+      const meta = [luogo, e.quota, posti(e)].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('');
+      return `<li class="ev" data-s="${esc(e.stato)}">
+        <a href="${LINK}${encodeURIComponent(e.id)}" target="_blank" rel="noopener">
+          <div class="quando"><span class="giorni">${esc(p.giorni)}</span><span class="mesi">${esc(p.mesi)}</span></div>
+          <div>
+            <div class="riga1"><span class="tipo">${esc(nomeTipo(e.tipo))}</span><span class="stato">${esc(STATI[e.stato] || 'Stato non indicato')}</span></div>
+            <h3 class="titolo">${esc(e.titolo)}</h3>
+            <p class="meta">${meta}</p>
+          </div>
+        </a>
+      </li>`;
+    }).join('')}</ul>`).join('');
+}
+
+$('tipi').addEventListener('click', ev => {
+  const b = ev.target.closest('button');
+  if (!b) return;
+  const t = b.dataset.t;
+  tipiScelti.has(t) ? tipiScelti.delete(t) : tipiScelti.add(t);
+  b.setAttribute('aria-pressed', tipiScelti.has(t));
+  render();
+});
+$('cerca').addEventListener('input', () => render());
+['regione', 'aperti', 'nazionali'].forEach(id => $(id).addEventListener('change', () => { salvaPref(); render(); }));
+</script>
+</body>
+</html>

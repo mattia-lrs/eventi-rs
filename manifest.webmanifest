@@ -1,0 +1,14 @@
+{
+  "name": "Eventi R/S",
+  "short_name": "Eventi R/S",
+  "description": "Gli eventi di BuonaCaccia per rover e scolte",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#E9EEE8",
+  "theme_color": "#C4122F",
+  "icons": [
+    { "src": "icona/icona-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icona/icona.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
