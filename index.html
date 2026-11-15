@@ -16,13 +16,13 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vollkorn:wght@600&family=Hanken+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* Hallmark · shape: app screen · genre: editorial · theme: Garden (by request) · redesign: full
- * nav: testata con nome, frase e pulsante Telegram · signature: l'elenco per mese su carta d'avena, con lo stato a pallino colorato · states: caricamento, vuoto, errore, pieno
- * brand: rosso della branca R/S al posto del verde foglia, azzurro camicia AGESCI nel tema scuro, verde/giallo/arancio per lo stato delle iscrizioni (richiesta dell'utente)
- * axes: light/roman-serif/warm · posture: restrained · contrast: pass · v2.0.0 */
-/* Hallmark · pre-emit critique: P3 H5 E4 S4 R4 V4 · weakest: P, uno strumento di consultazione non ha una tesi; la voce sta nella carta d'avena, nel Vollkorn e nello stato leggibile a colpo d'occhio */
+/* Hallmark · shape: app screen · genre: atmospheric · theme: Ribbon (by request) · redesign: full
+ * nav: testata con nome, frase e pulsante Telegram · signature: il pannello dei filtri lavorato come un'apparecchiatura, sopra l'elenco a righe sottili con lo stato a pallino · states: caricamento, vuoto, errore, pieno · ribbon: dawn, e nel tema scuro una notte azzurro camicia
+ * brand: rosso della branca R/S al posto del verde acqua, azzurro camicia AGESCI nel tema scuro, verde/giallo/arancio per lo stato delle iscrizioni (richiesta dell'utente)
+ * axes: light/grotesk-sans/neutral · posture: restrained · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P3 H5 E4 S4 R4 V4 · weakest: P, uno strumento di consultazione non ha una tesi; la voce sta nei titoli leggeri, nel pannello lavorato e nello stato leggibile a colpo d'occhio */
 /* Hallmark · dismissed F4 · il chip del tipo selezionato è lo stato di un filtro su una tinta chiara, non un secondo pulsante principale accanto a Telegram */
 :root {
   color-scheme: light;
@@ -30,43 +30,51 @@
   --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.2rem; --text-xl: 1.44rem; --text-2xl: 1.728rem; --text-3xl: 2.074rem;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --dur-short: 220ms;
   --container: 800px;
-  --color-paper: oklch(95.8% 0.024 90); --color-paper-2: oklch(92.6% 0.030 90); --color-paper-3: oklch(89% 0.034 90);
-  --color-ink: oklch(23% 0.050 152); --color-ink-2: oklch(33% 0.048 150); --color-muted: oklch(46% 0.034 142);
-  --color-rule: oklch(83% 0.024 112); --color-rule-2: oklch(68% 0.042 138);
-  /* Il rosso della branca R/S prende il posto del verde foglia del tema */
-  --color-accent: #C4122F; --color-accent-deep: #A10E26; --color-accent-ink: #FFF7F8; --color-accent-tint: #F6DDE1;
+  --color-paper: oklch(98.2% 0.008 82); --color-paper-2: oklch(95.8% 0.011 82); --color-paper-3: oklch(92.3% 0.014 82);
+  --color-ink: oklch(18% 0.006 80); --color-ink-2: oklch(30% 0.008 80); --color-muted: oklch(47% 0.012 80);
+  --color-rule: oklch(89.5% 0.011 82);
+  /* Il rosso della branca R/S prende il posto del verde acqua del tema */
+  --color-accent: #C4122F; --color-accent-deep: #A10E26; --color-accent-ink: #FFF7F8; --color-accent-soft: #F6DDE1;
   --color-focus: #C4122F;
   /* Stato delle iscrizioni */
   --stato-aperte: #1F7A4A; --stato-pochi: #946006; --stato-sovra: #B9470F; --stato-chiuse: #646F68;
-  --font-display: "Vollkorn", ui-serif, Georgia, serif; --font-body: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --radius-card: 4px; --radius-pill: 999px; --rule-hair: 1px;
-  --tracking-display: -0.012em; --display-weight: 600;
+  --edge-light: inset 0 1px 0 oklch(100% 0 0 / 0.5);
+  --edge-lit: inset 0 1px 0 oklch(100% 0 0 / 0.25);
+  --shadow-part: 0 1px 0 oklch(20% 0.01 80 / 0.25), 0 10px 18px -6px oklch(20% 0.01 80 / 0.3);
+  --shadow-panel: 0 1px 0 oklch(20% 0.01 80 / 0.2), 0 24px 48px -16px oklch(20% 0.02 80 / 0.35);
+  --font-display: "Instrument Sans", ui-sans-serif, system-ui, sans-serif; --font-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --radius-card: 20px; --radius-part: 6px; --radius-pill: 999px; --rule-hair: 1px;
+  --tracking-display: -0.035em; --display-weight: 400;
 }
-/* Tema scuro: l'azzurro della camicia AGESCI */
+/* Tema scuro: la notte nell'azzurro della camicia AGESCI, ombre dal nero */
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --color-paper: #0F1722; --color-paper-2: #172231; --color-paper-3: #22304A;
+    --color-paper: #0F1722; --color-paper-2: #172231; --color-paper-3: #1E2A3B;
     --color-ink: #E4ECF5; --color-ink-2: #CBD6E3; --color-muted: #9BAABD;
-    --color-rule: #2A384A; --color-rule-2: #5B6B80;
-    --color-accent: #FF5C70; --color-accent-deep: #FF8594; --color-accent-ink: #22090E; --color-accent-tint: #3B1A21;
+    --color-rule: #2A384A;
+    --color-accent: #FF5C70; --color-accent-deep: #FF8594; --color-accent-ink: #22090E; --color-accent-soft: #3B1A21;
     --color-focus: #FF5C70;
     --stato-aperte: #52C48A; --stato-pochi: #E4AE48; --stato-sovra: #F2884A; --stato-chiuse: #8693A5;
+    --edge-light: inset 0 1px 0 oklch(100% 0 0 / 0.07);
+    --edge-lit: inset 0 1px 0 oklch(100% 0 0 / 0.3);
+    --shadow-part: 0 1px 0 oklch(0% 0 0 / 0.5), 0 10px 18px -6px oklch(0% 0 0 / 0.6);
+    --shadow-panel: 0 1px 0 oklch(0% 0 0 / 0.4), 0 24px 48px -16px oklch(0% 0 0 / 0.7);
   }
 }
 *, *::before, *::after { box-sizing: border-box; }
 html, body { overflow-x: clip; }
-html { scrollbar-color: var(--color-rule-2) var(--color-paper); }
+html { scrollbar-color: var(--color-muted) var(--color-paper); }
 body {
   margin: 0; background: var(--color-paper); color: var(--color-ink-2);
-  font-family: var(--font-body); font-size: var(--text-md); line-height: 1.55;
+  font-family: var(--font-body); font-size: var(--text-md); line-height: 1.6;
   -webkit-font-smoothing: antialiased; caret-color: var(--color-accent);
 }
 ::selection { background: color-mix(in oklab, var(--color-accent) 22%, transparent); }
 :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 h1, h2, h3 {
   margin: 0; color: var(--color-ink); font-family: var(--font-display); font-weight: var(--display-weight);
-  font-synthesis: none; letter-spacing: var(--tracking-display); line-height: 1.1;
+  font-synthesis: none; letter-spacing: var(--tracking-display); line-height: 1.08;
   overflow-wrap: break-word; min-width: 0;
 }
 h1, h2 { text-wrap: balance; }
@@ -81,56 +89,58 @@ main { width: 100%; max-width: var(--container); margin-inline: auto; padding: v
 .marchio { display: flex; align-items: center; gap: var(--space-sm); }
 .icona { flex: none; width: 48px; height: 48px; border-radius: 10px; }
 h1 { font-size: var(--text-3xl); }
-.intro { max-width: 54ch; }
+.intro { color: var(--color-muted); max-width: 54ch; }
 .btn {
   justify-self: start; display: inline-flex; align-items: center; gap: var(--space-xs);
   min-height: 44px; padding: 0 var(--space-lg); margin-top: var(--space-2xs);
   border: var(--rule-hair) solid var(--color-accent); border-radius: var(--radius-pill);
-  background: var(--color-accent); color: var(--color-accent-ink);
+  background: var(--color-accent); color: var(--color-accent-ink); box-shadow: var(--edge-lit), var(--shadow-part);
   font-size: var(--text-sm); font-weight: 500; white-space: nowrap; text-decoration: none; cursor: pointer;
   transition: background-color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
 }
 .btn:hover { background: var(--color-accent-deep); border-color: var(--color-accent-deep); }
 .btn:active { transform: translateY(1px); }
 
-/* Filtri: un fondo d'avena più scuro, senza bordo */
+/* Filtri: un pannello lavorato, illuminato dall'alto */
 .filtri {
-  display: grid; gap: var(--space-sm); padding: var(--space-md); margin-bottom: var(--space-xs);
-  background: var(--color-paper-2); border-radius: var(--radius-card);
+  display: grid; gap: var(--space-sm); padding: var(--space-lg); margin-bottom: var(--space-xs);
+  border-radius: var(--radius-card); background: linear-gradient(var(--color-paper-2), var(--color-paper-3));
+  box-shadow: var(--edge-light), var(--shadow-panel);
 }
 .campi { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-sm); }
 input[type=search], select {
-  width: 100%; min-height: 40px; padding: 0 var(--space-sm); color: var(--color-ink); background: var(--color-paper);
-  border: var(--rule-hair) solid var(--color-muted); border-radius: var(--radius-card);
+  width: 100%; min-height: 40px; padding: 0 var(--space-md); color: var(--color-ink); background: var(--color-paper);
+  border: var(--rule-hair) solid var(--color-muted); border-radius: var(--radius-pill);
 }
 input[type=search]::placeholder { color: var(--color-muted); }
 input:disabled, select:disabled, button:disabled { opacity: 0.55; cursor: not-allowed; }
 .tipi { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
 .tipi button {
-  min-height: 32px; padding: 0 var(--space-md); cursor: pointer;
+  min-height: 34px; padding: 0 var(--space-md); cursor: pointer;
   font-size: var(--text-sm); font-weight: 500; color: var(--color-ink);
-  background: transparent; border: var(--rule-hair) solid var(--color-muted); border-radius: var(--radius-pill);
-  transition: background-color var(--dur-short) var(--ease-out);
+  border: var(--rule-hair) solid var(--color-rule); border-radius: var(--radius-pill);
+  background: linear-gradient(var(--color-paper), var(--color-paper-2)); box-shadow: var(--edge-light), var(--shadow-part);
+  transition: background-color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
 }
-.tipi button:hover { background: var(--color-paper-3); }
+.tipi button:hover { border-color: var(--color-muted); }
 .tipi button:active { transform: translateY(1px); }
-.tipi button[aria-pressed=true] { background: var(--color-accent-tint); border-color: var(--color-accent); color: var(--color-ink); }
+.tipi button[aria-pressed=true] { background: var(--color-accent-soft); border-color: var(--color-accent); box-shadow: var(--edge-light); }
 .spunte { display: flex; flex-wrap: wrap; gap: var(--space-2xs) var(--space-lg); font-size: var(--text-sm); }
 .spunte label { display: inline-flex; align-items: center; gap: var(--space-xs); min-height: 32px; cursor: pointer; }
 .spunte input { accent-color: var(--color-accent); width: 18px; height: 18px; margin: 0; }
 @media (pointer: coarse) {
   .tipi button, .spunte label, input[type=search], select { min-height: 44px; }
 }
-.conta { font-size: var(--text-sm); color: var(--color-muted); margin: var(--space-sm) 0 0; }
+.conta { font-size: var(--text-sm); color: var(--color-muted); margin: var(--space-md) 0 0; }
 
-/* Elenco per mese */
+/* Elenco: righe sottili, niente riquadri */
 .mese {
   display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md);
-  margin-top: var(--space-xl); padding-top: var(--space-sm); border-top: var(--rule-hair) solid var(--color-rule-2);
+  margin-top: var(--space-xl); padding-bottom: var(--space-xs); border-bottom: var(--rule-hair) solid var(--color-ink);
 }
 .mese h2 { font-size: var(--text-2xl); text-transform: capitalize; }
-.mese span { flex: none; font-size: var(--text-sm); color: var(--color-muted); }
-ul.lista { list-style: none; margin: var(--space-xs) 0 0; padding: 0; }
+.mese span { flex: none; font-size: var(--text-sm); color: var(--color-muted); font-variant-numeric: tabular-nums; }
+ul.lista { list-style: none; margin: 0; padding: 0; }
 .ev + .ev { border-top: var(--rule-hair) solid var(--color-rule); }
 .ev a {
   display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: var(--space-md);
@@ -138,7 +148,7 @@ ul.lista { list-style: none; margin: var(--space-xs) 0 0; padding: 0; }
 }
 .ev a:hover .titolo { text-decoration: underline; text-decoration-color: var(--color-accent); text-decoration-thickness: 2px; text-underline-offset: 0.16em; }
 .giorni {
-  display: block; font-size: var(--text-xl); font-weight: 700; line-height: 1.1; color: var(--color-ink);
+  display: block; font-size: var(--text-xl); font-weight: 500; line-height: 1.1; color: var(--color-ink);
   font-variant-numeric: lining-nums tabular-nums; white-space: nowrap;
 }
 .mesi { display: block; font-size: var(--text-sm); color: var(--color-muted); margin-top: var(--space-2xs); }
@@ -146,7 +156,7 @@ ul.lista { list-style: none; margin: var(--space-xs) 0 0; padding: 0; }
 .riga1 { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs) var(--space-sm); }
 .tipo {
   font-size: var(--text-sm); font-weight: 700; line-height: 1.5; padding: 0 var(--space-xs);
-  color: var(--color-accent); background: var(--color-accent-tint); border-radius: var(--radius-card);
+  color: var(--color-accent); background: var(--color-accent-soft); border-radius: var(--radius-part);
 }
 /* Il pallino porta lo stato delle iscrizioni, con il suo colore */
 .stato { display: inline-flex; align-items: center; gap: var(--space-xs); font-size: var(--text-sm); font-weight: 500; }
@@ -155,17 +165,21 @@ ul.lista { list-style: none; margin: var(--space-xs) 0 0; padding: 0; }
 .ev[data-s=light_yellow] .stato { color: var(--stato-pochi); }
 .ev[data-s=light_dual] .stato { color: var(--stato-sovra); }
 .ev[data-s=light_red] .stato, .ev[data-s=''] .stato { color: var(--stato-chiuse); }
-.titolo { margin: var(--space-xs) 0 var(--space-2xs); font-size: var(--text-lg); line-height: 1.25; text-wrap: pretty; }
+.titolo { margin: var(--space-xs) 0 var(--space-2xs); font-size: var(--text-lg); font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; text-wrap: pretty; }
 .meta { margin: 0; font-size: var(--text-sm); color: var(--color-muted); display: flex; flex-wrap: wrap; gap: 0 var(--space-md); }
 
-.messaggio { margin-top: var(--space-lg); padding: var(--space-lg); background: var(--color-paper-2); border-radius: var(--radius-card); }
-.messaggio.errore { background: var(--color-accent-tint); color: var(--color-ink); }
+.messaggio {
+  margin-top: var(--space-lg); padding: var(--space-lg); color: var(--color-muted);
+  border-radius: var(--radius-card); background: linear-gradient(var(--color-paper-2), var(--color-paper-3)); box-shadow: var(--edge-light);
+}
+.messaggio.errore { background: var(--color-accent-soft); color: var(--color-ink); }
 footer { margin-top: var(--space-xl); padding-top: var(--space-sm); border-top: var(--rule-hair) solid var(--color-rule); font-size: var(--text-sm); color: var(--color-muted); }
 footer a { color: var(--color-ink); text-underline-offset: 0.16em; }
 footer a:hover { text-decoration-color: var(--color-accent); }
 
 @media (max-width: 32rem) {
   main { padding-top: var(--space-lg); }
+  .filtri { padding: var(--space-md); }
   .campi { grid-template-columns: minmax(0, 1fr); }
   .ev a { grid-template-columns: 4.5rem minmax(0, 1fr); gap: var(--space-sm); }
   .giorni { font-size: var(--text-lg); }
